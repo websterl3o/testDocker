@@ -55,10 +55,13 @@ services:
 
     horizon-app:
         container_name: horizon-app
-        build: ./docker/horizon
+        platform: linux/x86_64
         restart: unless-stopped
-        command: php artisan horizon
+        build: ./docker/php
+        volumes:
+            - ./:/usr/share/nginx
         depends_on:
             - laravel-app
+        command: php artisan horizon
         networks:
             - app-networks
