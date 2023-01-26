@@ -1,33 +1,54 @@
-version: '3'
+version: '3.7'
 
+# Docker networks
+networks:
+    app-networks:
+        driver: bridge
+
+# Docker services
 services:
-    app-laravel:
-        container_name: app-laravel
+    # PHP and Nginx
+    laravel-app:
+        container_name: laravel-app
         platform: linux/x86_64
-        build: .
+        restart: unless-stopped
+        build: ./docker/php
         ports:
             - "9000:80"
         volumes:
             - ./:/usr/share/nginx
+        depends_on:
+            - mysql-app
+            - redis-app
         networks:
             - app-networks
 
-    app-mysql:
-        container_name: app-mysql
+    # MySQL
+    mysql-app:
+        container_name: mysql-app
         image: mysql:latest
         restart: unless-stopped
+        command: --default-authentication-plugin=mysql_native_password
         environment:
             MYSQL_DATABASE: ${DB_DATABASE}
             MYSQL_ROOT_PASSWORD: ${DB_PASSWORD}
             MYSQL_PASSWORD: ${DB_PASSWORD}
-            MYSQL_USER: ${DB_USERNAME}
+            MYSQL_USER: ${DB_USERNAME} # não pode ser root
         volumes:
             - ./.docker/mysql/dbdata:/var/lib/mysql
         ports:
-            - "3389:3306"
+            - "3399:3306"
         networks:
             - app-networks
 
-networks:
-    app-networks:
-        driver: bridge
+    # Redis
+    redis-app:
+        container_name: redis-app
+        image: redis:latest
+        restart: unless-stopped
+        volumes:
+            - ./.docker/redis/data:/data
+        ports:
+            - "6379:6379"
+        networks:
+            - app-networks
