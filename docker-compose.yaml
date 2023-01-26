@@ -52,3 +52,13 @@ services:
             - "6379:6379"
         networks:
             - app-networks
+
+    horizon-app:
+        container_name: horizon-app
+        build: ./docker/horizon
+        restart: unless-stopped
+        command: php artisan horizon
+        depends_on:
+            - laravel-app
+        networks:
+            - app-networks
